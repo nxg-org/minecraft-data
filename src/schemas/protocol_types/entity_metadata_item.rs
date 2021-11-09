@@ -1,0 +1,1 @@
+pub type EntityMetadataItem = Vec < serde_json :: Value > ;
