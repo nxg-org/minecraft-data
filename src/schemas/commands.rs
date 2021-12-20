@@ -1,4 +1,7 @@
+use crate::{FromMCDataVersionDir, MINECRAFT_DATA_DIR};
 use serde::*;
+const MODULE_NAME: &'static str = "commands";
+const FILE_NAME: &'static str = "commands.json";
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum ArgumentNodeItemChildren {
@@ -66,4 +69,23 @@ pub struct Commands {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub graph: Option<RootNode>,
     pub parsers: Vec<ParserInfo>,
+}
+impl FromMCDataVersionDir for Commands {
+    fn from_version_paths(paths: &std::collections::HashMap<String, String>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        let mut path = std::path::PathBuf::from(paths.get(MODULE_NAME).unwrap());
+        path.push(FILE_NAME);
+        Some(
+            serde_json::from_str(
+                MINECRAFT_DATA_DIR
+                    .get_file(path)
+                    .unwrap()
+                    .contents_utf8()
+                    .unwrap(),
+            )
+            .unwrap(),
+        )
+    }
 }

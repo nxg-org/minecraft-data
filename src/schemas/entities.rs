@@ -1,4 +1,7 @@
+use crate::{FromMCDataVersionDir, MINECRAFT_DATA_DIR};
 use serde::*;
+const MODULE_NAME: &'static str = "entities";
+const FILE_NAME: &'static str = "entities.json";
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
 pub struct EntitiesItem {
     #[doc = " The category of an entity : a semantic category"]
@@ -26,3 +29,22 @@ pub struct EntitiesItem {
     pub width: Option<f64>,
 }
 pub type Entities = Vec<EntitiesItem>;
+impl FromMCDataVersionDir for Entities {
+    fn from_version_paths(paths: &std::collections::HashMap<String, String>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        let mut path = std::path::PathBuf::from(paths.get(MODULE_NAME).unwrap());
+        path.push(FILE_NAME);
+        Some(
+            serde_json::from_str(
+                MINECRAFT_DATA_DIR
+                    .get_file(path)
+                    .unwrap()
+                    .contents_utf8()
+                    .unwrap(),
+            )
+            .unwrap(),
+        )
+    }
+}

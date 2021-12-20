@@ -1,4 +1,7 @@
+use crate::{FromMCDataVersionDir, MINECRAFT_DATA_DIR};
 use serde::*;
+const MODULE_NAME: &'static str = "windows";
+const FILE_NAME: &'static str = "windows.json";
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
 pub struct WindowsItemItemOpenedWith {
     pub id: i64,
@@ -32,3 +35,22 @@ pub struct WindowsItem {
     pub slots: Option<Vec<WindowsItemItemSlots>>,
 }
 pub type Windows = Vec<WindowsItem>;
+impl FromMCDataVersionDir for Windows {
+    fn from_version_paths(paths: &std::collections::HashMap<String, String>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        let mut path = std::path::PathBuf::from(paths.get(MODULE_NAME).unwrap());
+        path.push(FILE_NAME);
+        Some(
+            serde_json::from_str(
+                MINECRAFT_DATA_DIR
+                    .get_file(path)
+                    .unwrap()
+                    .contents_utf8()
+                    .unwrap(),
+            )
+            .unwrap(),
+        )
+    }
+}

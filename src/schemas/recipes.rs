@@ -1,4 +1,7 @@
+use crate::{FromMCDataVersionDir, MINECRAFT_DATA_DIR};
 use serde::*;
+const MODULE_NAME: &'static str = "recipes";
+const FILE_NAME: &'static str = "recipes.json";
 pub type Count = i64;
 #[doc = " A single numerical ID or null."]
 pub type Id = Option<i64>;
@@ -60,3 +63,22 @@ pub struct ShapelessRecipe {
 #[derive(Clone, PartialEq, Debug, Default, Deserialize, Serialize)]
 #[serde(rename = "recipes")]
 pub struct Recipes {}
+impl FromMCDataVersionDir for Recipes {
+    fn from_version_paths(paths: &std::collections::HashMap<String, String>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        let mut path = std::path::PathBuf::from(paths.get(MODULE_NAME).unwrap());
+        path.push(FILE_NAME);
+        Some(
+            serde_json::from_str(
+                MINECRAFT_DATA_DIR
+                    .get_file(path)
+                    .unwrap()
+                    .contents_utf8()
+                    .unwrap(),
+            )
+            .unwrap(),
+        )
+    }
+}

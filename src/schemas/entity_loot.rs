@@ -1,4 +1,7 @@
+use crate::{FromMCDataVersionDir, MINECRAFT_DATA_DIR};
 use serde::*;
+const MODULE_NAME: &'static str = "entityLoot";
+const FILE_NAME: &'static str = "entityLoot.json";
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
 pub struct EntityLootItemItemDrops {
     #[doc = " The percent chance of the item drop to occur"]
@@ -22,3 +25,22 @@ pub struct EntityLootItem {
     pub entity: String,
 }
 pub type EntityLoot = Vec<EntityLootItem>;
+impl FromMCDataVersionDir for EntityLoot {
+    fn from_version_paths(paths: &std::collections::HashMap<String, String>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        let mut path = std::path::PathBuf::from(paths.get(MODULE_NAME).unwrap());
+        path.push(FILE_NAME);
+        Some(
+            serde_json::from_str(
+                MINECRAFT_DATA_DIR
+                    .get_file(path)
+                    .unwrap()
+                    .contents_utf8()
+                    .unwrap(),
+            )
+            .unwrap(),
+        )
+    }
+}

@@ -1,4 +1,7 @@
+use crate::{FromMCDataVersionDir, MINECRAFT_DATA_DIR};
 use serde::*;
+const MODULE_NAME: &'static str = "biomes";
+const FILE_NAME: &'static str = "biomes.json";
 #[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
 pub struct BiomesItem {
     #[doc = " The category of a biome"]
@@ -24,3 +27,22 @@ pub struct BiomesItem {
     pub temperature: f64,
 }
 pub type Biomes = Vec<BiomesItem>;
+impl FromMCDataVersionDir for Biomes {
+    fn from_version_paths(paths: &std::collections::HashMap<String, String>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        let mut path = std::path::PathBuf::from(paths.get(MODULE_NAME).unwrap());
+        path.push(FILE_NAME);
+        Some(
+            serde_json::from_str(
+                MINECRAFT_DATA_DIR
+                    .get_file(path)
+                    .unwrap()
+                    .contents_utf8()
+                    .unwrap(),
+            )
+            .unwrap(),
+        )
+    }
+}
