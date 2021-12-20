@@ -3,9 +3,11 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 pub mod schemas;
+pub mod supported_versions;
 
 pub mod prelude {
     pub use super::schemas::*;
+    pub use super::supported_versions::SUPPORTED_VERSIONS;
     pub use super::{FromMCDataVersionDir, FromVersion, MINECRAFT_DATA_DIR};
 }
 

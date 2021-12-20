@@ -2,16 +2,31 @@
 use convert_case::{Case, Casing};
 use proc_macro2::Span;
 use schemafy_lib;
-use std::{io::Write, path::PathBuf, process::Command};
+use std::{io::Write, path::PathBuf, process::Command, str::FromStr};
 
+const MINECRAFT_PC_VERSIONS: &'static str = "./minecraft-data/data/pc/common/versions.json";
 const MINECRAFT_DATA_SCHEMA_PATH: &'static str = "./minecraft-data/schemas";
 const SCHEMA_OUT_FILES: &'static str = "./src/schemas";
 
 fn main() {
     if let Err(_) = std::fs::read_dir(SCHEMA_OUT_FILES) {
         iter_schema_dir(MINECRAFT_DATA_SCHEMA_PATH);
+        std::fs::write(
+            "src/supported_versions.rs",
+            get_supported_versions().to_string(),
+        )
+        .unwrap()
     }
     Command::new("cargo").arg("fmt").spawn().unwrap();
+}
+
+fn get_supported_versions() -> proc_macro2::TokenStream {
+    let mut ret = quote::quote! {pub const SUPPORTED_VERSIONS: &'static [&'static str] = &};
+    ret.extend(proc_macro2::TokenStream::from_str(
+        &std::fs::read_to_string(MINECRAFT_PC_VERSIONS).unwrap(),
+    ));
+    ret.extend_one(quote::quote! {;});
+    ret
 }
 
 fn iter_schema_dir<T: Into<PathBuf> + Copy>(dir_path: T) {
